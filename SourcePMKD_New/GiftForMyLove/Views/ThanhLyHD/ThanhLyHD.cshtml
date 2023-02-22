@@ -1,0 +1,285 @@
+﻿
+@{
+    ViewData["Title"] = "ThanhLyHD";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using Data.Models.Trading_system
+
+<style>
+    .text-box-hdmb {
+        height: 28px;
+        position: relative;
+        min-height: 1px;
+        float: left;
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: small;
+    }
+</style>
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="form-group row col-md-12 col-sm-12">
+            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px" value="1" name="IsFinish" id="NotFinish" onclick="FilterDataGrid_FinishHDMB()" checked><label for="NotFinish" style="margin-top:6px">HĐ chưa hoàn thành giao hàng</label>
+            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px" value="0" name="IsFinish" id="Finish" onclick="FilterDataGrid_FinishHDMB()"><label for="Finish" style="margin-top:6px">HD hoàn thành giao hàng</label>
+        </div>
+        <div class="form-group row col-md-12 col-sm-12">
+            <div class="col-md-1 col-sm-1">
+                <input type="checkbox" style="margin-right:10px;margin-left:10px" value="true" id="ShowAll">
+                <input type="hidden" id="ShowAll" value="false" hidden>
+                <label class="col-form-label">Tất cả</label>
+            </div>
+            <div class="col-md-6 col-sm-6">
+                <label class="col-form-label col-md-2 col-sm-2">Ngày giao</label>
+                <input type="date" class="form-control col-md-4 col-sm-4 text-box-hdmb" id="datefrom" onchange="FilterDataGrid_FinishHDMB()">
+                <label class="col-form-label col-md-1 col-sm-1">--></label>
+                <input type="date" class="form-control col-md-5 col-sm-5 text-box-hdmb" id="dateto" onchange="FilterDataGrid_FinishHDMB()">
+            </div>
+            <select class="col-md-2 col-sm-2 text-box-hdmb" aria-label="Default select example" id="ContractType" onchange="FilterDataGrid_FinishHDMB()">
+                <option value="MUA" selected>HĐ mua</option>
+                <option value="BAN">HĐ Bán</option>
+            </select>
+        </div>
+
+        <div class="col-md-12 col-sm-12 ">
+            @(Html.DevExtreme().DataGrid<Sp_Hdmb_FinishHDMB>().ID("FinishHDMB_dataGrid")
+                                    .DataSource(ds => ds.Mvc()
+                                        .Controller("ThanhLyHD")
+                                        .LoadAction("LoadHDMB")
+                                        .Key("systemref")
+                                    )
+                                    .RemoteOperations(true)
+                                    .Columns(columns => {
+
+                                        columns.Add().DataField("systemref").Caption("Systemref").Visible(false);
+
+                                        columns.Add().DataField("refnumber").Caption("Ref");
+
+                                        columns.Add().DataField("sohd").Caption("Số hợp đồng");
+
+                                        columns.AddFor(a => a.ngayky).Caption("Ngày ký");
+
+                                        columns.AddFor(a => a.ngaygiao).Caption("Ngày giao");
+
+                                        columns.Add().DataField("ten_khach").Caption("Tên khách");
+
+                                        columns.Add().DataField("TrongLuong").Caption("Trọng lượng");
+
+                                        columns.Add().DataField("SL_Giao").Caption("Số lượng giao");
+
+                                        columns.Add().DataField("TrongLuongConLai").Caption("Trọng lượng còn lại");
+
+                                        columns.Add().DataField("DK").Caption("DK").Visible(false);
+
+                                        columns.Add().DataField("trangthai").Caption("Trạng thái").Visible(false);
+
+                                    })
+                                    .FilterPanel(e => e.Visible(true))
+                                    .FilterBuilderPopup(p =>
+                                        p.Position(pos =>
+                                            pos.At(HorizontalAlignment.Center, VerticalAlignment.Top)
+                                                .My(HorizontalAlignment.Center, VerticalAlignment.Top)
+                                                .Offset(0, 10)
+                                        )
+                                    )
+                                    .Toolbar(toolbar =>
+                                    {
+                                        toolbar.Items(items =>
+                                        {
+                                            items.Add().Location(ToolbarItemLocation.After).Widget(w => w.Button().Text("Not Finish Deliver").OnClick("NotFinishDeliver"));
+                                            items.Add().Location(ToolbarItemLocation.After).Widget(w => w.Button().Text("Finish Deliver").OnClick("FinishDeliver"));
+                                            items.Add().Name("addRowButton").Location(ToolbarItemLocation.After);
+                                            items.Add().Name("exportButton").Location(ToolbarItemLocation.After);
+                                            items.Add().Name("searchPanel").Location(ToolbarItemLocation.After);
+                                        });
+                                    })
+                                    .OnSelectionChanged("FinishHDMB_dataGrid_selected")
+                                    .Selection(s => s.Mode(SelectionMode.Single))
+                                    .Export(e => e.Enabled(true))
+                                    .FilterRow(filter => filter.Visible(true).ApplyFilter(GridApplyFilterMode.Auto))
+                                    .HeaderFilter(hearder => hearder.Visible(true))
+                                    .AllowColumnResizing(true)
+                                    .AllowColumnReordering(true)
+                                    .ColumnAutoWidth(true)
+                                    .ColumnChooser(c => c.Enabled(true))
+                                    .ColumnFixing(c => c.Enabled(true))
+                                    .ShowBorders(true)
+                                    .Grouping(group => group.AutoExpandAll(true))
+                                    .SearchPanel(searchPanel => searchPanel.Visible(true))
+                                    .GroupPanel(groupPanel => groupPanel.Visible(true))
+                                    .Paging(paging => paging.PageSize(10))
+                                    .Pager(paper =>
+                                    {
+                                        paper.ShowPageSizeSelector(true);
+                                        paper.AllowedPageSizes(new[] { 5, 10, 20 });
+                                        paper.ShowInfo(true);
+                                    })
+                                )
+        </div>
+        <div class="form-group row col-md-12 col-sm-12">
+            <label class="col-form-label col-md-12 col-sm-12">Chi tiết hợp đồng</label>
+        </div>
+        <div class="col-md-12 col-sm-12 ">
+            @(Html.DevExtreme().DataGrid<Sp_CtHDMB_FinishHDMB>().ID("CtHDMB_FinishHDMB_dataGrid")
+                                    .DataSource(ds => ds.Mvc()
+                                        .Controller("ThanhLyHD")
+                                        .LoadAction("LoadCtHDMB_FinishHDMB")
+                                        .LoadParams(new { id = new JS("GetSystemRef") })
+                                        .Key("mahang")
+                                    )
+                                    .RemoteOperations(true)
+                                    .Columns(columns => {
+
+                                        columns.Add().DataField("systemref").Caption("Systemref").Visible(false);
+
+                                        columns.Add().DataField("MaNhom").Caption("Mã nhóm");
+
+                                        columns.Add().DataField("mahang").Caption("Mã hàng");
+
+                                        columns.Add().DataField("tenhang").Caption("Tên hàng");
+
+                                        columns.Add().DataField("Gia").Caption("Giá");
+
+                                        columns.Add().DataField("TrongLuong").Caption("Trọng lượng");
+
+                                        columns.Add().DataField("TLGiao").Caption("TL giao");
+
+                                        columns.Add().DataField("TLChenhLech").Caption("Trọng lượng chênh lệch");
+
+                                        columns.Add().DataField("SoBao").Caption("Số bao");
+
+                                        columns.Add().DataField("SoBaoGiao").Caption("Số bao giao");
+
+                                        columns.Add().DataField("SoBaoChenhLech").Caption("Số bao chênh lệch");
+
+                                    })
+                                    .FilterPanel(e => e.Visible(true))
+                                    .FilterBuilderPopup(p =>
+                                        p.Position(pos =>
+                                            pos.At(HorizontalAlignment.Center, VerticalAlignment.Top)
+                                                .My(HorizontalAlignment.Center, VerticalAlignment.Top)
+                                                .Offset(0, 10)
+                                        )
+                                    )
+
+                                    .FilterRow(filter => filter.Visible(true).ApplyFilter(GridApplyFilterMode.Auto))
+                                    .HeaderFilter(hearder => hearder.Visible(true))
+                                    .AllowColumnResizing(true)
+                                    .AllowColumnReordering(true)
+                                    .ColumnAutoWidth(true)
+                                    .ColumnFixing(c => c.Enabled(true))
+                                    .ShowBorders(true)
+                                    .Grouping(group => group.AutoExpandAll(true))
+                                    .Paging(paging => paging.PageSize(10))
+                                    .Pager(paper =>
+                                    {
+                                        paper.ShowPageSizeSelector(true);
+                                        paper.AllowedPageSizes(new[] { 5, 10, 20 });
+                                        paper.ShowInfo(true);
+                                    })
+                                )
+        </div>
+    </div>
+    <br />
+</div>
+<input type="text" id="systemref" hidden>
+<input type="text" id="DK" hidden>
+<input type="text" id="trangthai" hidden>
+<script type="text/javascript">
+    function FinishDeliver() {
+        var systemref = document.getElementById("systemref").value;
+        var DK = document.getElementById("DK").value;
+        var trangthai = document.getElementById("trangthai").value;
+        if (systemref == "") {
+            $.notify("vui lòng chọn hợp đồng muốn hoàn thành giao hàng", "error");
+        }
+        else if (trangthai == 0) {
+            $.notify("Hợp đồng bạn chọn đã hoàn thành giao hàng", "error");
+        }
+        else
+        {
+            $.post('/ThanhLyHD/FinishHDMB', { 'systemref': systemref, 'DK': DK ,'trangthai': 0}, function (data) {
+                FilterDataGrid_FinishHDMB();
+                $.notify(data, "succcess");
+
+            })
+        }
+    }
+    function NotFinishDeliver() {
+        var systemref = document.getElementById("systemref").value;
+        var DK = document.getElementById("DK").value;
+        var trangthai = document.getElementById("trangthai").value;
+        if (systemref == "") {
+            $.notify("Vui lòng chọn hợp đồng muốn hủy hoàn thành giao hàng", "error");
+        } else if (trangthai == 1) {
+            $.notify("Hợp đồng bạn chọn chưa hoàn thành giao hàng", "error");
+        } else {
+            $.post('/ThanhLyHD/FinishHDMB', { 'systemref': systemref, 'DK': DK,'trangthai': 1 }, function (data) {
+                FilterDataGrid_FinishHDMB();
+                $.notify(data, "success");
+
+
+            })
+        }
+    }
+    var sudung_hanghoa = [{
+        "id": 1, "name": "Đang giao dịch"
+    }, {
+        "id": 0, "name": "Ngừng giao dịch"
+    }
+    ];
+    function FinishHDMB_dataGrid_selected(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            document.getElementById("systemref").value = data.systemref;
+            document.getElementById("DK").value = data.DK;
+            document.getElementById("trangthai").value = data.trangthai;
+            $("#CtHDMB_FinishHDMB_dataGrid").dxDataGrid("refresh");
+        }
+    }
+    function GetSystemRef() {
+        return document.getElementById("systemref").value;
+    }
+    window.onload = function () {
+        SetValueFilter();
+    }
+    function SetValueFilter() {
+        var date = new Date();
+        var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        var month = "";
+        var day = "";
+        if (firstDay.getMonth() < 10) {
+            month = `0${firstDay.getMonth() + 1}`;
+        } else {
+            month = firstDay.getMonth() + 1;
+        }
+        if (firstDay.getDate() < 10) {
+            day = "0" + firstDay.getDate();
+        } else {
+            day = firstDay.getDate();
+        }
+        document.getElementById("datefrom").value = firstDay.getFullYear() + "-" + month + "-" + day;
+        document.getElementById("dateto").value = firstDay.getFullYear() + "-" + month + "-" + lastDay.getDate();
+    }
+    function FilterDataGrid_FinishHDMB() {
+        var datefrom = document.getElementById("datefrom").value;
+        var dateto = document.getElementById("dateto").value;
+        var ContractType = document.getElementById("ContractType").value;
+        var IsFinish = document.querySelector('input[name="IsFinish"]:checked').value;;
+        $.post('/ThanhLyHD/FilterDataGrid_FinishHDMB', { 'datefrom': datefrom, 'dateto': dateto, 'ContractType': ContractType, 'IsFinish': IsFinish }, function (data) {
+            $("#FinishHDMB_dataGrid").dxDataGrid({
+                dataSource: data,
+                keyExpr: "systemref"
+
+            });
+            $("#FinishHDMB_dataGrid").dxDataGrid("refresh");
+
+
+        })
+    }
+</script>
+
+
+
+

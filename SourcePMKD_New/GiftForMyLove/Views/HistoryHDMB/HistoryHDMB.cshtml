@@ -1,0 +1,433 @@
+﻿
+@{
+    ViewData["Title"] = "HistoryHDMB";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .text-box-hdmb {
+        height: 28px;
+        position: relative;
+        min-height: 1px;
+        float: left;
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: small;
+    }
+</style>
+<div class="right_col" role="main">
+    <div class="">
+        @{
+            if (TempData["alertMessage"] != null)
+            {
+                <div style="color:red;font-size:30px">
+                    @TempData["alertMessage"].ToString()
+                </div>
+            }
+        }
+        <div class="clearfix"></div>
+        <div class="row" id="row">
+            <div class="col-md-12 col-sm-12" style="height:auto;border:2px solid black;padding-right:0px;padding-left:0px">
+                <div class="col-md-7 col-sm-7" style="margin-left:0px">
+                    <div class="form-group row">
+                        <select class="form-select col-md-6 col-sm-6 text-box-hdmb" id="Fill_Type_HDMB">
+                            <option value="MUA">MUA</option>
+                            <option value="BAN">BÁN</option>
+                        </select>
+                        <select class="form-select col-md-6 col-sm-6 text-box-hdmb" id="Fill_Date_HDMB">
+                            <option selected value="HOPDONG">Theo hợp đồng</option>
+                            <option value="NGAY">Theo ngày giao hàng</option>
+                        </select>
+                    </div>
+                    <div id="TheoHopHong">
+                        <div class="form-group row">
+                            <label class="col-form-label col-md-2 col-sm-2" style="margin-right:2px">Số HĐ</label>
+                            <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="sohd_History_HDMB">
+                            <label class="col-form-label col-md-1 col-sm-1">Ref</label>
+                            <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="Ref_History_HDMB">
+                            <input type="checkbox" style="margin:10px 10px 12px 10px" id="trangthai_History_HDMB" disabled>
+                            <label class="col-form-label col-md-3 col-sm-3">Đã kt giao nhận</label>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-form-label col-md-2 col-sm-2">Ngày ký</label>
+                            <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="ngayky_History_HDMB" disabled>
+                            <label class="col-form-label col-md-2 col-sm-2">Ngày giao</label>
+                            <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="ngaygiao_History_HDMB" disabled>
+                            <label class="col-form-label col-md-2 col-sm-2">Ngày TL</label>
+                            <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="ngaytl_History_HDMB" disabled>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-form-label col-md-2 col-sm-2">ĐVT theo HĐ</label>
+                            <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="DVTTheoHD_History_HDMB" disabled>
+                            <label class="col-form-label col-md-2 col-sm-2">Hàng hóa</label>
+                            <input type="text" class="form-control col-md-6 col-sm-6 text-box-hdmb" id="hanghoa_History_HDMB" disabled>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-form-label col-md-2 col-sm-2">SL HĐ</label>
+                            <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="trongluong_History_HDMB" disabled>
+                            <label class="col-form-label col-md-2 col-sm-2">SL đã giao</label>
+                            <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="TLGiao_History_HDMB" disabled>
+                            <label class="col-form-label col-md-1 col-sm-1">Giá</label>
+                            <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="Price_History_HDMB" disabled>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-form-label col-md-2 col-sm-2">Ghi chú</label>
+                            <input type="text" class="form-control col-md-10 col-sm-10 text-box-hdmb" id="ghichu_History_HDMB" disabled>
+                        </div>
+                    </div>
+                    <div id="TheoNgayGiaoHang">
+                        <div class="form-group row">
+                            <label class="col-form-label col-md-2 col-sm-2">Ngày giao từ</label>
+                            <input type="date" class="form-control col-md-4 col-sm-4 text-box-hdmb">
+                            <label class="col-form-label col-md-2 col-sm-2">đến</label>
+                            <input type="date" class="form-control col-md-4 col-sm-4 text-box-hdmb">
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-form-label col-md-2 col-sm-2">Tổng số bao giao</label>
+                            <input type="text" class="form-control col-md-10 col-sm-10 text-box-hdmb">
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-form-label col-md-2 col-sm-2">Tổng SL giao</label>
+                            <input type="text" class="form-control col-sm-10 col-md-10 text-box-hdmb">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 col-sm-5">
+                    @(Html.DevExtreme().DataGrid().ID("HangHoa_HistoryHDMB_Datagrid")
+                                .DataSource(d => d.Mvc().Controller("HistoryHDMB").LoadAction("LoadHangHoa_HistoryHDMB").Key("hanghoa").LoadParams(new { id = new JS("GetSystemRef") }))
+                                .Columns(columns => {
+                                    columns.Add().DataField("sohd").Caption("Số hợp đồng");
+                                    columns.Add().DataField("hanghoa").Caption("Hàng hóa");
+                                    columns.Add().DataField("TLGiao").Caption("Trọng lượng giao");
+                                    columns.Add().DataField("DVTTheoHD").Caption("ĐVT");
+                                    columns.Add().DataField("ngaygiao").Caption("Ngày giao");
+                                    columns.Add().DataField("ngayky").Caption("Ngày kí");
+                                    columns.Add().DataField("ngaytl").Caption("Ngày thanh lí");
+                                    columns.Add().DataField("trangthai").Caption("Trạng thái");
+                                    columns.Add().DataField("trongluong").Caption("Trọng lượng");
+                                    columns.Add().DataField("mahang").Caption("Mã hàng");
+                                    columns.Add().DataField("Price").Caption("Giá");
+                                    columns.Add().DataField("Ref").Caption("Ref");
+                                    columns.Add().DataField("ghichu").Caption("Ghi chú");
+                                    columns.Add().DataField("systemref").Caption("systemref").Visible(false);
+
+                                })
+                                .ShowBorders(true)
+                                .ColumnAutoWidth(true)
+                                .HoverStateEnabled(true)
+                                .Paging(p => p.PageSize(10))
+                                .FilterRow(f => f.Visible(true))
+                                .Selection(s => s.Mode(SelectionMode.Single))
+                                .OnSelectionChanged("HangHoa_HistoryHDMB_Datagrid_Selected")
+                            )
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12" style="height:auto;padding:initial">
+                <div class="col-md-12 col-sm-12" style="border:3px solid black;padding: initial" id="dataGrid_left">
+                    <div id="GiaoNhan">
+                        <label class="col-form-label">Giao nhận</label>
+                        <div class="col-md-12 col-sm-12" style="height:auto">
+                            @(Html.DevExtreme().DataGrid()
+                                .ID("GiaoNhan_HistoryHDMB_HDMua_Datagrid")
+                                .DataSource(d => d.Mvc().Controller("HistoryHDMB").LoadAction("LoadGiaoNhan_HistoryHDMB").Key("ItemCode").LoadParams(new { id = new JS("GetSystemRef") }))
+                                .Columns(columns => {
+                                    columns.Add().DataField("sohdmua").Caption("Hợp đồng mua");
+                                    columns.Add().DataField("sohdban").Caption("Hợp đồng bán");
+                                    columns.Add().DataField("ngayky").Caption("Ngày ký");
+                                    columns.Add().DataField("ItemCode").Caption("Mã hàng");
+                                    columns.Add().DataField("SLGiao").Caption("Số lượng giao");
+                                    columns.Add().DataField("SoBao").Caption("Số bao giao");
+                                    columns.Add().DataField("NgayGiaoHang").Caption("Ngày giao hàng");
+                                    columns.Add().DataField("ten_khach").Caption("Khách hàng");
+                                    columns.Add().DataField("xe_vc").Caption("Số xe");
+                                    columns.Add().DataField("NoiGiaoHang").Caption("Nơi giao hàng");
+
+                                })
+                                .ColumnAutoWidth(true)
+                                .HoverStateEnabled(true)
+                                .Paging(p => p.PageSize(10))
+                                .FilterRow(f => f.Visible(true))
+                                .Selection(s => s.Mode(SelectionMode.Single))
+                            )
+                        </div>
+                    </div>
+                    <div id="GiaoNhan_ChungTu">
+                        <label class="col-form-label">Giao nhận</label>
+                        <div style="height:auto">
+                            @(Html.DevExtreme().DataGrid()
+                                .ID("GiaoNhan_HistoryHDMB__HDBan_Datagrid")
+                                .DataSource(d => d.Mvc().Controller("HistoryHDMB").LoadAction("LoadGiaoNhan_HistoryHDMB").Key("Id").LoadParams(new { id = new JS("GetSystemRef") }))
+                                .Columns(columns => {
+                                    columns.Add().DataField("sohdmua").Caption("Hợp đồng mua");
+                                    columns.Add().DataField("sohdban").Caption("Hợp đồng bán");
+                                    columns.Add().DataField("ngayky").Caption("Ngày ký");
+                                    columns.Add().DataField("ItemCode").Caption("Mã hàng");
+                                    columns.Add().DataField("SLGiao").Caption("Số lượng giao");
+                                    columns.Add().DataField("SoBao").Caption("Số bao giao");
+                                    columns.Add().DataField("NgayGiaoHang").Caption("Ngày giao hàng");
+                                    columns.Add().DataField("ten_khach").Caption("Khách hàng");
+                                    columns.Add().DataField("xe_vc").Caption("Số xe");
+                                    columns.Add().DataField("NoiGiaoHang").Caption("Nơi giao hàng");
+
+                                })
+                                .ColumnAutoWidth(true)
+                                .HoverStateEnabled(true)
+                                .Paging(p => p.PageSize(10))
+                                .FilterRow(f => f.Visible(true))
+                                .Selection(s => s.Mode(SelectionMode.Single))
+                            )
+                        </div>
+                        <label class="col-form-label">Chứng từ</label>
+                        <div style="height:auto">
+                            @(Html.DevExtreme().DataGrid()
+                                .ID("ChungTu_HistoryHDMB_Datagrid")
+                                .DataSource(d => d.Mvc().Controller("HistoryHDMB").LoadAction("LoadChungtu_HDBan_HistoryHDMB").Key("invoice").LoadParams(new { id = new JS("GetSystemRef") }))
+                                .Columns(columns => {
+                                    columns.Add().DataField("invoice");
+                                    columns.Add().DataField("date_iv");
+                                    columns.Add().DataField("bill_no");
+                                    columns.Add().DataField("date_bill");
+                                    columns.Add().DataField("LoaiIV");
+                                    columns.Add().DataField("NW");
+                                    columns.Add().DataField("GW");
+                                    columns.Add().DataField("Bag");
+                                    columns.Add().DataField("Amount");
+                                    columns.Add().DataField("cbuyer");
+                                    columns.Add().DataField("goods");
+                                    columns.Add().DataField("DocumentType");
+
+                                })
+                                .Summary(s => s.TotalItems(items => {
+                                items.Add().Column("NW").SummaryType(SummaryType.Sum).CustomizeText(@<text> function(data) {return "Tổng NW: " + data.value}</text>);
+
+                                    items.Add().Column("GW").SummaryType(SummaryType.Sum).CustomizeText(@<text>function(data) {return "Tổng GW: " + data.value}</text>);
+
+                                    items.Add().Column("Amount").SummaryType(SummaryType.Sum).CustomizeText(@<text>function(data) {return "Tổng giá trị: " + data.value}</text>);
+
+
+
+                                }))
+                                .ColumnAutoWidth(true)
+                                .HoverStateEnabled(true)
+                                .Paging(p => p.PageSize(10))
+                                .FilterRow(f => f.Visible(true))
+                                .Selection(s => s.Mode(SelectionMode.Single))
+                            )
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="text" id="MuaBan_HistoryHDMB" hidden>
+            <input type="text" id="MaHang_HistoryHDMB" hidden>
+            <input type="text" id="Systemref" hidden>
+        </div>
+    </div>
+</div>
+@*----------------------------------------------------Bootrap popup choose Hợp đồng mua bán-------------------------------------------------------------------------------------------------------------------------------*@
+<div class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="selected_HDMB">
+    <div class="modal-dialog" style="max-width:80%">
+        <div class="modal-content">
+            @(Html.DevExtreme().DataGrid().ID("HistoryHDMB_Datagrid")
+                                .DataSource(d => d.Mvc().Controller("HistoryHDMB").LoadAction("LoadHangHoa_HistoryHDMB").Key("mahang"))
+                                .Columns(columns => {
+                                    columns.Add().DataField("sohd").Caption("Số hợp đồng");
+                                    columns.Add().DataField("hanghoa").Caption("Hàng hóa");
+                                    columns.Add().DataField("TLGiao").Caption("Trọng lượng giao");
+                                    columns.Add().DataField("DVTTheoHD").Caption("ĐVT");
+                                    columns.Add().DataField("ngaygiao").Caption("Ngày giao");
+                                    columns.Add().DataField("ngayky").Caption("Ngày kí"); 
+                                    columns.Add().DataField("ngaytl").Caption("Ngày thanh lí");
+                                    columns.Add().DataField("trangthai").Caption("Trạng thái");
+                                    columns.Add().DataField("trongluong").Caption("Trọng lượng");
+                                    columns.Add().DataField("mahang").Caption("Mã hàng");
+                                    columns.Add().DataField("Price").Caption("Giá");
+                                    columns.Add().DataField("Ref").Caption("Ref");
+                                    columns.Add().DataField("ghichu").Caption("Ghi chú");
+                                    columns.Add().DataField("systemref").Caption("systemref").Visible(false);
+                                })
+                                .ShowBorders(true)
+                                .ColumnAutoWidth(true)
+                                .HoverStateEnabled(true)
+                                .Paging(p => p.PageSize(10))
+                                .FilterRow(f => f.Visible(true))
+                                .Selection(s => s.Mode(SelectionMode.Single))
+                                .OnSelectionChanged("HistoryHDMB_Datagrid_Selected")
+                            )
+        </div>
+    </div>
+</div>
+@*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*@
+<script type="text/javascript">
+    document.onkeyup = function (event) {
+        if (event.which == 13 || event.keyCode == 13) {0
+            $("#selected_HDMB").modal('hide');
+        }
+    }
+    window.onload = function () {
+        var MuaBan = document.getElementById("Fill_Type_HDMB").value;
+        if (MuaBan == "MUA" || MuaBan == "KTRA") {
+            LoadDiv_Mua();
+        } else if (MuaBan == "BAN") {
+            LoadDiv_Ban();
+        } else if (MuaBan == "MUON") {
+            LoadDiv_Muon();
+        } else if (MuaBan == "CMUON") {
+            LoadDiv_CMuon();
+        }
+        LoadDiv_TheoHopDong();
+    }
+    function GetSystemRef() {
+        return document.getElementById("Systemref").value;
+    }
+    function GetMaHang() {
+        return document.getElementById("MaHang_HistoryHDMB").value;
+    }
+    function HangHoa_HistoryHDMB_Datagrid_Selected(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            document.getElementById("sohd_History_HDMB").value = data.sohd;
+            document.getElementById("Ref_History_HDMB").value = data.Ref;
+            if (data.trangthai == 0) {
+                document.getElementById("trangthai_History_HDMB").checked = true;
+            }
+            else {
+                document.getElementById("trangthai_History_HDMB").checked = false;
+            }
+            document.getElementById("ngayky_History_HDMB").value = data.ngayky;
+            document.getElementById("ngaygiao_History_HDMB").value = data.ngaygiao;
+            document.getElementById("ngaytl_History_HDMB").value = data.ngaytl;
+            document.getElementById("DVTTheoHD_History_HDMB").value = data.DVTTheoHD;
+            document.getElementById("hanghoa_History_HDMB").value = data.hanghoa;
+            document.getElementById("trongluong_History_HDMB").value = data.trongluong;
+            document.getElementById("TLGiao_History_HDMB").value = data.TLGiao;
+            document.getElementById("Price_History_HDMB").value = data.Price;
+            document.getElementById("ghichu_History_HDMB").value = data.ghichu;
+            document.getElementById("MaHang_HistoryHDMB").value = data.mahang;
+            $.post('/HistoryHDMB/GetDataGiaoNhan_AfterSelected', { 'mahang': data.mahang, 'systemref': data.systemref }, function (data) {
+                $("#GiaoNhan_HistoryHDMB_HDMua_Datagrid").dxDataGrid({
+                    dataSource: data,
+                    keyExpr: 'ItemCode'
+                });
+                $("#GiaoNhan_HistoryHDMB_HDMua_Datagrid").dxDataGrid("refresh");
+            })
+        }
+        
+       
+
+        
+        $("#GiaoNhan_HistoryHDMB_HDBan_Datagrid").dxDataGrid("refresh");
+        $("#HangHoa_HistoryHDMB_Datagrid").dxDataGrid("refresh");
+        $("#ChungTu_HistoryHDMB_Datagrid").dxDataGrid("refresh");
+    }
+    
+    function HistoryHDMB_Datagrid_Selected(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            document.getElementById("sohd_History_HDMB").value = data.sohd;
+            document.getElementById("Ref_History_HDMB").value = data.Ref;
+            if (data.trangthai == 0) {
+                document.getElementById("trangthai_History_HDMB").checked = true;
+            }
+            else {
+                document.getElementById("trangthai_History_HDMB").checked = false;
+            }
+            document.getElementById("ngayky_History_HDMB").value = data.ngayky;
+            document.getElementById("ngaygiao_History_HDMB").value = data.ngaygiao;
+            document.getElementById("ngaytl_History_HDMB").value = data.ngaytl;
+            document.getElementById("DVTTheoHD_History_HDMB").value = data.DVTTheoHD;
+            document.getElementById("hanghoa_History_HDMB").value = data.hanghoa;
+            document.getElementById("trongluong_History_HDMB").value = data.trongluong;
+            document.getElementById("TLGiao_History_HDMB").value = data.TLGiao;
+            document.getElementById("Price_History_HDMB").value = data.Price;
+            document.getElementById("ghichu_History_HDMB").value = data.ghichu;
+            document.getElementById("MaHang_HistoryHDMB").value = data.mahang;
+            document.getElementById("Systemref").value = data.systemref;
+            document.getElementById("MaHang_HistoryHDMB").value = data.mahang;
+        }
+        $("#GiaoNhan_HistoryHDMB_HDMua_Datagrid").dxDataGrid("refresh");
+        $("#GiaoNhan_HistoryHDMB_HDBan_Datagrid").dxDataGrid("refresh");
+        $("#HangHoa_HistoryHDMB_Datagrid").dxDataGrid("refresh");
+        $("#ChungTu_HistoryHDMB_Datagrid").dxDataGrid("refresh");
+    }
+    function LoadDiv_TheoHopDong() {
+        document.getElementById("TheoHopHong").style.display = "block";
+        document.getElementById("TheoNgayGiaoHang").style.display = "none";
+    }
+    function LoadDiv_TheoNgayGiaoHang() {
+        document.getElementById("TheoHopHong").style.display = "none";
+        document.getElementById("TheoNgayGiaoHang").style.display = "block";
+    }
+    function LoadDiv_Mua() {
+        document.getElementById("GiaoNhan_ChungTu").style.display = "none";
+        document.getElementById("GiaoNhan").style.display = "block";
+        document.getElementById("dataGrid_left").classList.remove("col-md-12");
+        document.getElementById("dataGrid_left").classList.add("col-md-12");
+        document.getElementById("Fill_Type_HDMB").value = 'MUA';
+    }
+    function LoadDiv_Ban() {
+        document.getElementById("GiaoNhan").style.display = "none";
+        document.getElementById("dataGrid_left").classList.remove("col-md-12");
+        document.getElementById("dataGrid_left").classList.add("col-md-12");
+        document.getElementById("GiaoNhan_ChungTu").style.display = "block";
+        document.getElementById("Fill_Type_HDMB").value = 'BAN';
+
+
+    }
+    $('#Fill_Date_HDMB').on('change', function () {
+        if (this.value == 'HOPDONG') {
+            LoadDiv_TheoHopDong();
+        } else if (this.value == 'NGAY') {
+            LoadDiv_TheoNgayGiaoHang();
+        }
+
+
+    })
+    $("#Fill_Type_HDMB").on('change', function () {
+        if (this.value == 'MUA') {
+            document.getElementById("Fill_Type_HDMB").value = 'MUA';
+            LoadDiv_Mua();
+        }
+        else if (this.value == 'BAN') {
+            document.getElementById("Fill_Type_HDMB").value = 'BAN';
+            LoadDiv_Ban();
+        }
+        else if (this.value == 'MUON') {
+            document.getElementById("Fill_Type_HDMB").value = 'MUON';
+            LoadDiv_Muon();
+        }
+        else if (this.value == 'CMUON') {
+            document.getElementById("Fill_Type_HDMB").value = 'CMUON';
+            LoadDiv_CMuon();
+        }
+        else if (this.value == 'KTRA') {
+            document.getElementById("Fill_Type_HDMB").value = 'KTRA';
+            LoadDiv_Mua();
+        }
+    })
+    function ReturnSystemref_HDMB() {
+        return document.getElementById("SystemRef_HDMB").value;
+    }
+    $("#sohd_History_HDMB").keyup(function (event) {
+        if (event.keyCode === 13) {
+            var sohd_History_HDMB = document.getElementById("sohd_History_HDMB").value;
+            var Fill_Type_HDMB = document.getElementById("Fill_Type_HDMB").value;
+            var Ref_History_HDMB = document.getElementById("Ref_History_HDMB").value;
+            console.log(sohd_History_HDMB);
+            console.log(Fill_Type_HDMB);
+            console.log(Ref_History_HDMB)
+            $.post('/HistoryHDMB/GetDataHistoryHDMB', { 'sohd_History_HDMB': sohd_History_HDMB, 'Fill_Type_HDMB': Fill_Type_HDMB, 'Ref_History_HDMB': Ref_History_HDMB }, function (data) {
+                $("#HistoryHDMB_Datagrid").dxDataGrid({
+                    dataSource: data,
+                    keyExpr: "systemref"
+
+                });
+            })
+            $("#selected_HDMB").modal('show');
+        }
+    });
+</script>
+
+
+
+
+

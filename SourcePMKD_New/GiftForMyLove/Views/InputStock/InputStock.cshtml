@@ -1,0 +1,373 @@
+﻿
+@{
+    ViewData["Title"] = "InputStock";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@model InputStock
+<style>
+    .text-box-hdmb {
+        height: 30px;
+        position: relative;
+        min-height: 1px;
+        float: left;
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: small;
+        color: black;
+    }
+</style>
+
+<div class="right_col" role="main">
+    <div class="row">
+        @{
+            if (TempData["alertMessage"] != null)
+            {
+                <div style="color:red;font-size:30px">
+                    @TempData["alertMessage"].ToString()
+                </div>
+            }
+        }
+        <div class="col-md-12 col-sm-12 ">
+            <div class="col-md-3 col-sm-3" style="height:auto" id="leftdiv">
+
+                @{
+                    DateTime now = DateTime.Now;
+                    var startDate = new DateTime(now.Year, now.Month, 1);
+                    var endDate = startDate.AddMonths(1).AddDays(-1);
+                    var filterValue = new object[] { new object[] { "EntDate", FilterBuilderFieldFilterOperations.Between, new object[] { startDate, endDate } } };
+                }
+                @(Html.DevExtreme().DataGrid<InputStock>().ID("InputStock_dataGrid")
+                                    .DataSource(ds => ds.Mvc()
+                                        .Controller("InputStock")
+                                        .LoadAction("LoadInputStock")
+                                        .Key("InputStockId")
+                                    )
+                                    .RemoteOperations(true)
+                                    .Columns(columns => {
+
+                                        columns.AddFor(m => m.InputStockId).Caption("Id").Visible(false);
+
+                                        columns.AddFor(m => m.InputNumber).Caption("Số phiếu"); 
+
+                                        columns.AddFor(m => m.ContractNumber).Caption("Số HĐ");
+
+                                        columns.AddFor(m => m.EntDate).Visible(false);
+
+                                    })
+                                    .FilterPanel(e => e.Visible(true))
+                                    .FilterValue(filterValue)
+                                    .FilterBuilderPopup(p =>
+                                        p.Position(pos =>
+                                            pos.At(HorizontalAlignment.Center, VerticalAlignment.Top)
+                                                .My(HorizontalAlignment.Center, VerticalAlignment.Top)
+                                                .Offset(0, 10)
+                                        )
+                                    )
+                                    .OnSelectionChanged("InputStock_Selection")
+                                    .ColumnAutoWidth(true)
+                                    .Selection(s => s.Mode(SelectionMode.Single))
+                                    .HoverStateEnabled(true)
+                                    .FilterRow(filter => filter.Visible(true).ApplyFilter(GridApplyFilterMode.Auto))
+                                    .HeaderFilter(hearder => hearder.Visible(true))
+                                    .AllowColumnResizing(true)
+                                    .AllowColumnReordering(true)
+                                    .ShowBorders(true)
+                                    .Grouping(group => group.AutoExpandAll(true))
+                                    .Paging(paging => paging.PageSize(14))
+                                )
+
+
+            </div>
+            <div class="col-md-9 col-sm-9" id="rightdiv" style="height:auto;min-height:auto">
+                <form id="Form_Hdmb" method="post">
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Số phiếu</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="InputNumber" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">Hình thức</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="InputTypeName" disabled>
+                        <div class="col-md-3 col-sm-3" style="text-align:center">
+                            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px" name="IsProduce" id="SanXuat" disabled value="1"><label for="y">Sản xuất</label>
+                            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px" name="IsProduce" id="GiaCong" disabled value="0"><label for="y">Gia công</label>
+                        </div>
+                        <select class="form-select col-md-3 col-sm-3 text-box-hdmb" id="StockCode" disabled>
+                            @foreach (var stock in ViewBag.Stock)
+                            {
+                                <option value="@stock.StockCode">@stock.StockName</option>
+                            }
+
+                        </select>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">HĐ Mua</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="ContractNumber" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1" style="font-size:smaller">HĐ Cho Mượn</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="Collate" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">Ngày nhận</label>
+                        <input type="datetime" class="form-control col-md-5 col-sm-5 text-box-hdmb" id="EntDate" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Người GN</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="PersonName" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1" style="font-size:smaller">Lệnh nhập kho</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="LenhNhap" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">Số xe</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="XeVc" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">ĐV giao hàng</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="DvGiao" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Ghi chú</label>
+                        <input type="text" class="form-control col-md-11 col-sm-11 text-box-hdmb" id="Note" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">KCS</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="Kcsid" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">Mã hàng</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="ItemCode" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">Tên hàng</label>
+                        <input type="text" class="form-control col-md-4 col-sm-4 text-box-hdmb" id="ItemName" disabled>
+                        <input type="text" class="form-control col-md-1 col-sm-1 text-box-hdmb" id="Unit" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Số bao</label>
+                        <input type="text" class="form-control col-md-1 col-sm-1 text-box-hdmb" id="SoBao" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">Loại bao</label>
+                        <select class="form-select col-md-2 col-sm-2 text-box-hdmb" id="LoaiBao" disabled>
+                            @foreach (var stock in ViewBag.BagType)
+                            {
+                                <option value="@stock.BagTypeId">@stock.Name</option>
+                            }
+
+                        </select>
+                        <label class="col-form-label col-md-1 col-sm-1">TL bao</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="TLBaoBi" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">GW</label>
+                        <input type="text" class="form-control col-md-1 col-sm-1 text-box-hdmb" id="GW" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">NW</label>
+                        <input type="text" class="form-control col-md-1 col-sm-1 text-box-hdmb" id="NW" disabled>
+                    </div>
+                </form>
+
+                @(Html.DevExtreme().DataGrid<InputDetail>().ID("InputDetail_dataGrid")
+                                    .DataSource(ds => ds.Mvc()
+                                        .Controller("InputStock")
+                                        .LoadAction("LoadInputDetail")
+                                        .Key("InputDetailId")
+                                        .LoadParams(new { id = new JS("GetInputStockId") })
+                                    )
+                                    .RemoteOperations(true)
+                                    .Columns(columns => {
+
+                                        columns.AddFor(m => m.ItemCode).Caption("Mã hàng");
+
+                                        columns.AddFor(m => m.ItemName).Caption("Systemref");
+
+                                        columns.AddFor(m => m.Unit).Caption("ĐVT");
+
+                                        columns.AddFor(m => m.Quantity).Caption("Trọng lượng");
+
+                                        columns.AddFor(m => m.SoBao).Caption("Số bao");
+
+                                        columns.AddFor(m => m.InputDetailId).Caption("InputDetailId");
+
+                                        columns.AddFor(m => m.InputStockId).Caption("InputStockId");
+
+                                    })
+                                    .FilterRow(filter => filter.Visible(true).ApplyFilter(GridApplyFilterMode.Auto))
+                                    .HeaderFilter(hearder => hearder.Visible(true))
+                                    .AllowColumnResizing(true)
+                                    .AllowColumnReordering(true)
+                                    .ColumnAutoWidth(true)
+                                    .ColumnFixing(c => c.Enabled(true))
+                                    .ShowBorders(true)
+                                    .Grouping(group => group.AutoExpandAll(true))
+                                    .Paging(paging => paging.PageSize(10))
+                                    .Pager(paper =>
+                                    {
+                                        paper.ShowPageSizeSelector(true);
+                                        paper.AllowedPageSizes(new[] { 5, 10, 20 });
+                                        paper.ShowInfo(true);
+                                    })
+                                )
+
+
+            </div>
+            <div class="col-md-12 col-sm-12" id="leftdiv" style="text-align:center">
+                <button type="button" class="btn btn-secondary" id="Button_New" style="font-size:small" onclick="Button_New()">New</button>
+                <button type="button" class="btn btn-secondary" id="Button_Edit" style="font-size:small" onclick="Button_Edit()">Edit</button>
+                <button type="button" class="btn btn-secondary" id="Button_Cancel" style="font-size:small" onclick="Button_Cancel()">Cancel</button>
+                <button type="button" class="btn btn-secondary" style="font-size:small" onclick="ExportWord()">Export word</button>
+                <button type="button" class="btn btn-secondary" style="font-size:small" onclick="History_HDMB()">Delivery Detail</button>
+                <button type="button" class="btn btn-secondary" style="font-size:small" onclick="AddAnnex()">Add Annex</button>
+                <button type="button" class="btn btn-secondary" style="font-size:small" onclick="AddPlans()">Add plan</button>
+            </div>
+        </div>
+    </div>
+    <br />
+</div>
+<input type="text" id="InputStockId" hidden>
+<input type="text" id="InputTypeId" hidden>
+<script type="text/javascript">
+    function GetInputStockId() {    
+        return document.getElementById("InputStockId").value;
+    }
+
+    $(function () {
+        $('input:radio[name="IsProduce"]').change(function () {
+            if ($(this).val() == '0') {
+                document.getElementById("Kcsid").disabled = true;
+            } else {
+                document.getElementById("Kcsid").disabled = false;
+            }
+        });
+    });
+
+    function InputStock_Selection(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            $.post('/InputStock/Fill_Data_InputStock', { 'InputStockId': data.InputStockId }, function (array) {
+                document.getElementById("InputNumber").value = array.InputNumber;
+                document.getElementById("InputTypeName").value = array.InputTypeName;
+                if (array.IsProduce == 1) {
+                    document.getElementById("SanXuat").checked = true;
+                } else {
+                    document.getElementById("GiaCong").checked = true;
+                }
+                document.getElementById("StockCode").value = array.StockCode;
+                document.getElementById("ContractNumber").value = array.ContractNumber;
+                document.getElementById("Collate").value = array.Collate;
+                document.getElementById("EntDate").value = array.EntDate;
+                document.getElementById("PersonName").value = array.PersonName;
+                document.getElementById("LenhNhap").value = array.LenhNhap;
+                document.getElementById("XeVc").value = array.XeVc;
+                document.getElementById("DvGiao").value = array.DvGiao;
+                document.getElementById("Note").value = array.Note;
+                document.getElementById("Kcsid").value = array.Kcsid;
+                document.getElementById("ItemCode").value = array.ItemCode;
+                document.getElementById("ItemName").value = array.ItemName;
+                document.getElementById("Unit").value = array.Unit;
+                document.getElementById("SoBao").value = array.SoBao;
+                document.getElementById("LoaiBao").value = array.LoaiBao;
+                document.getElementById("TLBaoBi").value = array.TLBaoBi;
+                document.getElementById("GW").value = array.GW;
+                document.getElementById("NW").value = array.NW;
+                document.getElementById("InputStockId").value = array.InputStockId; 
+                $("#InputDetail_dataGrid").dxDataGrid("refresh");
+            })
+            
+        }
+    }
+
+    function EnableForm() {
+        document.getElementById("InputNumber").disabled = false;
+        document.getElementById("InputTypeName").disabled = false;
+        document.getElementById("SanXuat").disabled = false;
+        document.getElementById("GiaCong").disabled = false;
+        document.getElementById("StockCode").disabled = false;
+        document.getElementById("ContractNumber").disabled = false;
+        document.getElementById("EntDate").disabled = false;
+        document.getElementById("PersonName").disabled = false;
+        document.getElementById("LenhNhap").disabled = false;
+        document.getElementById("XeVc").disabled = false;
+        document.getElementById("DvGiao").disabled = false;
+        document.getElementById("Note").disabled = false;
+        document.getElementById("ItemCode").disabled = false;
+        document.getElementById("SoBao").disabled = false;
+        document.getElementById("LoaiBao").disabled = false;
+        document.getElementById("TLBaoBi").disabled = false;
+        document.getElementById("GW").disabled = false;
+        document.getElementById("NW").disabled = false;
+    }
+
+    function ClearText_Form() {
+        document.getElementById("InputNumber").value = '';
+        document.getElementById("InputTypeName").value = '';
+        document.getElementById("SanXuat").checked = false;
+        document.getElementById("GiaCong").checked = true;
+        document.getElementById("StockCode").value = '';
+        document.getElementById("ContractNumber").value = '';
+        document.getElementById("Collate").value = '';
+        document.getElementById("EntDate").value = '';
+        document.getElementById("PersonName").value = '';
+        document.getElementById("LenhNhap").value = '';
+        document.getElementById("XeVc").value = '';
+        document.getElementById("DvGiao").value = '';
+        document.getElementById("Note").value = '';
+        document.getElementById("Kcsid").value = '';
+        document.getElementById("ItemCode").value = '';
+        document.getElementById("ItemName").value = '';
+        document.getElementById("Unit").value = '';
+        document.getElementById("SoBao").value = '';
+        document.getElementById("LoaiBao").value = '';
+        document.getElementById("TLBaoBi").value = '';
+        document.getElementById("GW").value = '';
+        document.getElementById("NW").value = '';
+    }
+
+    function GetDataForm() {
+
+    }
+
+    function Button_New() {
+        var text = document.getElementById("Button_New").innerText;
+        if (text == 'New') {
+            document.getElementById("Button_New").innerHTML = 'Save';
+            EnableForm();
+            ClearText_Form();
+        } else if (text == 'Save') {
+
+            var InputNumber = document.getElementById("InputNumber").value;
+            var InputTypeName = document.getElementById("InputTypeName").value;
+            var IsProduce = document.querySelector('input[name="IsProduce"]:checked').value;
+            var StockCode = document.getElementById("StockCode").value;
+            var ContractNumber = document.getElementById("ContractNumber").value;
+            var Collate = document.getElementById("Collate").value;
+            var EntDate = document.getElementById("EntDate").value;
+            var PersonName = document.getElementById("PersonName").value;
+            var LenhNhap = document.getElementById("LenhNhap").value;
+            var XeVc = document.getElementById("XeVc").value;
+            var DvGiao = document.getElementById("DvGiao").value;
+            var Note = document.getElementById("Note").value;
+            var Kcsid = document.getElementById("Kcsid").value;
+            var ItemCode = document.getElementById("ItemCode").value;
+            var ItemName = document.getElementById("ItemName").value;
+            var Unit = document.getElementById("Unit").value;
+            var SoBao = document.getElementById("SoBao").value;
+            var LoaiBao = document.getElementById("LoaiBao").value;
+            var TLBaoBi = document.getElementById("TLBaoBi").value;
+            var GW = document.getElementById("GW").value;
+            var NW = document.getElementById("NW").value;
+            var InputTypeId = document.getElementById("InputTypeId").value;
+
+            $.post('/InputStock/AddInputStock', {
+                'InputNumber': InputNumber, 'InputTypeId': InputTypeId,'InputTypeName': InputTypeName, 'IsProduce': IsProduce, 'StockCode': StockCode,
+                'ContractNumber': ContractNumber, 'Collate': Collate, 'EntDate': EntDate, 'PersonName': PersonName, 'LenhNhap': LenhNhap,
+                'XeVc': XeVc, 'DvGiao': DvGiao, 'Note': Note, 'Kcsid': Kcsid, 'ItemCode': ItemCode, 'ItemName': ItemName, 'Unit': Unit,
+                'SoBao': SoBao, 'LoaiBao': LoaiBao, 'TLBaoBi': TLBaoBi, 'GW': GW, 'NW': NW
+            }, function (data) {
+
+
+
+
+            })
+        }
+    }
+
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+

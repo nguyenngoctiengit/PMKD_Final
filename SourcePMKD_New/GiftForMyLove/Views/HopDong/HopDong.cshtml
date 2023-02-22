@@ -1,0 +1,973 @@
+﻿
+@{
+    ViewData["Title"] = "Hợp đồng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@model Hdmb
+<style>
+    .text-box-hdmb {
+        height: 30px;
+        position: relative;
+        min-height: 1px;
+        float: left;
+        padding-right: 10px;
+        padding-left: 10px;
+        font-size: small;
+        color: black;
+    }
+</style>
+
+<div class="right_col" role="main">
+    <div class="row">
+        @{
+            if (TempData["alertMessage"] != null)
+            {
+                <div style="color:red;font-size:30px">
+                    @TempData["alertMessage"].ToString()
+                </div>
+            }
+        }
+        <div class="col-md-12 col-sm-12 ">
+            <div class="col-md-3 col-sm-3" style="height:auto" id="leftdiv">
+
+                @{
+                    DateTime now = DateTime.Now;
+                    var startDate = new DateTime(now.Year, now.Month, 1);
+                    var endDate = startDate.AddMonths(1).AddDays(-1);
+                    var filterValue = new object[] { new object[] { "Ngaylam", FilterBuilderFieldFilterOperations.Between, new object[] { startDate, endDate } } };
+                }
+                @(Html.DevExtreme().SelectBox()
+                                    .DataSource(new JS("LOAIHD"))
+                                    .DisplayExpr("name")
+                                    .ValueExpr("id")
+                                    .Value("ALL")
+                                    .OnValueChanged(@<text>
+                                        function(data) {
+                                            var dataGrid = $("#HopDong_dataGrid").dxDataGrid("instance");
+                                            if (data.value == "ALL")
+                                                dataGrid.clearFilter();
+                                            else
+                                                dataGrid.filter(["MuaBan", "=", data.value]);
+                                        }
+                                    </text>)
+                                )
+                @(Html.DevExtreme().DataGrid<Hdmb>().ID("HopDong_dataGrid")
+                                    .DataSource(ds => ds.Mvc()
+                                        .Controller("HopDong")
+                                        .LoadAction("LoadHopDong")
+                                        .Key("Systemref")
+                                    )
+                                    .RemoteOperations(true)
+                                    .Columns(columns => {
+
+                                        columns.AddFor(m => m.Systemref).Caption("Systemref");
+
+                                        columns.AddFor(m => m.Sohd).Caption("Số HĐ");
+
+                                        columns.AddFor(m => m.Ngaylam).Visible(false).SortOrder(SortOrder.Asc);
+
+                                        columns.AddFor(m => m.MuaBan).Visible(false);
+
+                                    })
+                                    .FilterPanel(e => e.Visible(true))
+                                    .FilterValue(filterValue)
+                                    .FilterBuilderPopup(p =>
+                                        p.Position(pos =>
+                                            pos.At(HorizontalAlignment.Center, VerticalAlignment.Top)
+                                                .My(HorizontalAlignment.Center, VerticalAlignment.Top)
+                                                .Offset(0, 10)
+                                        )
+                                    )
+                                    .ColumnAutoWidth(true)
+                                    .OnSelectionChanged("Hdmb_Selection")
+                                    .Selection(s => s.Mode(SelectionMode.Single))
+                                    .HoverStateEnabled(true)
+                                    .FilterRow(filter => filter.Visible(true).ApplyFilter(GridApplyFilterMode.Auto))
+                                    .HeaderFilter(hearder => hearder.Visible(true))
+                                    .AllowColumnResizing(true)
+                                    .AllowColumnReordering(true)
+                                    .ShowBorders(true)
+                                    .Grouping(group => group.AutoExpandAll(true))
+                                    .Paging(paging => paging.PageSize(18))
+                                )
+
+
+            </div>
+            <div class="col-md-9 col-sm-9" id="rightdiv" style="height:auto;min-height:auto">
+                <form id="Form_Hdmb" method="post">
+                    <div class="form-group row" style="margin-bottom:0px">
+                        <div class="col-md-8 col-sm-8" style="border: 1px solid; border-color: black;text-align:center">
+                            <label class="col-form-label col-md-2 col-sm-2">Mã ĐV</label>
+                            <input type="text" class="form-control col-md-4 col-sm-4 text-box-hdmb" asp-for="Macn" disabled>
+                            <label class="col-form-label col-md-2 col-sm-2">Người tạo</label>
+                            <input type="text" class="form-control col-md-4 col-sm-4 text-box-hdmb" asp-for="Nguoilam" id="Nguoilam" disabled>
+                        </div>
+                        <div class="col-md-4 col-sm-4" style="border: 1px solid; border-color: black;text-align:center">
+                            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px" asp-for="TypeKd" value="0" name="TypeKd" id="TrucTiep" checked disabled><label for="y">Trực tiếp</label>
+                            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px" asp-for="TypeKd" value="1" name="TypeKd" id="UyThac" disabled><label for="y">Ủy thác</label>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-8 col-sm-8" style="border: 1px solid; border-color: black;text-align:center">
+                            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px " asp-for="MuaBan" id="MUA" value="MUA" name="MuaBan" checked disabled><label for="MUA">Mua hàng</label>
+                            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px " asp-for="MuaBan" id="BAN" value="BAN" name="MuaBan" disabled><label for="BAN">Bán hàng</label>
+                        </div>
+                        <div class="col-md-4 col-sm-4" style="border: 1px solid; border-color: black;text-align:center">
+                            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px" asp-for="IsFix" value="false" name="IsFix" id="OutRight" checked disabled><label for="OutRight">Giá outright</label>
+                            <input type="radio" style="display: inline-block; margin: 5px 10px 5px 10px" asp-for="IsFix" value="true" name="IsFix" id="TruLui" disabled><label for="TruLui">Giá trừ lùi</label>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">System ID</label>
+                        <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="Systemref" disabled>
+
+                        <div class="col-md-8 col-sm-8" style="text-align:left">
+                            <input type="checkbox" style="margin-right:10px;margin-left:10px" name="@Html.NameFor(a => a.Pakd)" value="true" id="Pakd" disabled>
+                            <input type="hidden" name="@Html.NameFor(a => a.Pakd)" value="false" hidden>
+                            <label class="col-form-label">Hợp đồng bắt buộc có PAKD</label>
+                            <input type="checkbox" style="margin-right: 10px; margin-left: 10px" name="@Html.NameFor(a => a.IsNoKhoDoi)" value="true" id="IsNoKhoDoi" disabled>
+                            <input type="hidden" name="@Html.NameFor(a => a.IsNoKhoDoi)" value="false" hidden>
+                            <label class="col-form-label">Hợp đồng nợ khó đòi</label>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Ref</label>
+                        <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" asp-for="Ref" id="Ref" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">Số hợp đồng</label>
+                        <input type="text" class="form-control col-md-7 col-sm-7 text-box-hdmb" id="Sohd" asp-for="Sohd" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Tiền tệ</label>
+                        @(Html.DevExtreme().SelectBoxFor(a => a.Tiente).DataSource(d => d.Mvc().Controller("Lookup")
+                                                                            .LoadAction("GetTienTe").LoadMode(DataSourceLoadMode.Raw))
+                                                                        .DisplayExpr("Ma").ValueExpr("Ma").ElementAttr("class", "form-control col-md-3 col-sm-3 text-box-hdmb").OnValueChanged("Changed_TienTe").ID("Tiente").Disabled(true))
+                        <input type="text" class="form-control col-md-8 col-sm-8 text-box-hdmb" id="Money" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Khách hàng</label>
+                        <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="Makhach" asp-for="Makhach" disabled>
+                        <input type="text" class="form-control col-md-5 col-sm-5 text-box-hdmb" id="Tenfull" asp-for="Tenfull" disabled>
+                        <label class="col-form-label col-md-1 col-sm-1">V.chuyển</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="VanChuyen" asp-for="VanChuyen" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">INT Ký</label>
+                        <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="IntKy" asp-for="IntKy" disabled>
+                        <input type="text" class="form-control col-md-8 col-sm-8 text-box-hdmb" id="Name_IntKy" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Khách ký</label>
+                        <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="ClientKy" asp-for="ClientKy" disabled>
+                        <input type="text" class="form-control col-md-8 col-sm-8 text-box-hdmb" id="Name_ClientKy" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Thanh toán</label>
+                        <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="Thanhtoan" asp-for="Thanhtoan" disabled>
+                        <input type="text" class="form-control col-md-8 col-sm-8 text-box-hdmb" id="TenTT" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Địa điểm g.h</label>
+                        <input type="text" class="form-control col-md-11 col-sm-11 text-box-hdmb" id="DiaDiemGiaoHang" asp-for="DiaDiemGiaoHang" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Mức ứng</label>
+                        <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="Mucung" disabled>
+                        <label class="col-form-label col-md-auto col-sm-auto">Tạm ứng theo HĐ(FOB)</label>
+                        <input type="text" class="form-control col-md-2 col-sm-2 text-box-hdmb" id="TienUngHd" asp-for="TienUngHd" disabled>
+                        <label class="col-form-label col-md-auto col-sm-auto">Tạm ứng thực tế</label>
+                        <input type="text" class="form-control col-md-3 col-sm-3 text-box-hdmb" id="TienUngTt" asp-for="TienUngTt" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Ngày hđ</label>
+                        <div class="col-md-3 col-sm-3 text-box-hdmb">
+                            @(Html.DevExtreme().DateBoxFor(a => a.Ngayky).Type(DateBoxType.Date).DisplayFormat("dd/MM/yyyy").ID("Ngayky").Disabled(true).ElementAttr("class", "form-control col-md-3 col-sm-3 text-box-hdmb"))
+                        </div>
+                        <label class="col-form-label col-md-1 col-sm-1" style="padding-left:0px;padding-right:0px">Ngày g.hàng</label>
+                        <div class="col-md-3 col-sm-3 text-box-hdmb">
+                            @(Html.DevExtreme().DateBoxFor(a => a.Ngaygiao).Type(DateBoxType.Date).DisplayFormat("dd/MM/yyyy").ID("Ngaygiao").Disabled(true).ElementAttr("class", "form-control col-md-3 col-sm-3 text-box-hdmb"))
+                        </div>
+                        <label class="col-form-label col-md-1 col-sm-1" style="padding-left:0px;padding-right:0px">Ngày h.lực</label>
+                        <div class="col-md-3 col-sm-3 text-box-hdmb">
+                            @(Html.DevExtreme().DateBoxFor(a => a.Ngayhl).Type(DateBoxType.Date).DisplayFormat("dd/MM/yyyy").ID("Ngayhl").Disabled(true).ElementAttr("class", "form-control col-md-3 col-sm-3 text-box-hdmb"))
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-1 col-sm-1">Ghi chú</label>
+                        <textarea type="text" class="form-control col-md-11 col-sm-11 text-box-hdmb" asp-for="Ghichu" id="Ghichu" disabled></textarea>
+                    </div>
+                </form>
+                @(Html.DevExtreme().DataGrid<CtHdmb>().ID("CtHDMB_dataGrid")
+                                    .DataSource(ds => ds.Mvc()
+                                        .Controller("Hopdong")
+                                        .LoadAction("LoadCtHDMB")
+                                        .InsertAction("InsertCtHDMB")
+                                        .UpdateAction("UpdateCtHDMB")
+                                        .DeleteAction("DeleteCtHDMB")
+                                        .Key("IdRow")
+                                        .LoadParams(new { id = new JS("GetSystemRef") })
+                                    )
+                                    .RemoteOperations(true)
+                                    .Columns(columns => {
+
+                                        columns.AddFor(m => m.IdRow).Visible(false);
+
+                                        columns.AddFor(m => m.Systemref).Caption("Systemref");
+
+                                        columns.Add().DataField("mahang1").Caption("Mã hàng");
+
+                                        columns.AddFor(m => m.Mahang).Caption("Mã hàng").Visible(false).Lookup(lookup => lookup.DataSource(d => d.Mvc().Controller("lookup")
+                                                                                                                                    .LoadAction("LoadMaHangForCtHDMB")
+                                                                                                                                    .LoadParams(new { id = new JS("ReturnMaKhach") }))
+                                                                                                                                    .DisplayExpr("tenhang")
+                                                                                                                                    .ValueExpr("mahang")
+                                                                                                                                    .AllowClearing(true))
+                                                                                                            .EditCellTemplate(new TemplateName("DropDownBoxTemplate_Hanghoa"));
+
+                                        columns.Add().DataField("Tenhang").Caption("Tên hàng");
+
+                                        columns.AddFor(m => m.Soluong).Caption("Số lượng");
+
+                                        columns.AddFor(m => m.Trongluong).Caption("Trọng lượng");
+
+                                        columns.AddFor(m => m.Dvt).Caption("ĐVT");
+
+                                        columns.AddFor(m => m.Vat).Caption("VAT");
+
+                                        columns.AddFor(m => m.Giact).Caption("Giá");
+
+                                        columns.AddFor(m => m.Giatt).Caption("Giá tạm tính");
+
+                                        columns.AddFor(m => m.Solot).Caption("Số LOT");
+
+                                        columns.AddFor(m => m.Giathang).Caption("Giá tháng");
+
+                                        columns.AddFor(m => m.Gianam).Caption("Giá năm");
+
+                                        columns.AddFor(m => m.Sig).Caption("+ / -");
+
+                                        columns.AddFor(m => m.Diff).Caption("Mức trừ");
+
+                                        columns.AddFor(m => m.FNgayfix).Caption("Ngày chốt");
+
+                                        columns.AddFor(m => m.Stoploss).Caption("Mức stoploss");
+
+                                        columns.Add().DataField("MaNhom").Caption("Mã nhóm");
+
+                                        columns.AddFor(m => m.Giathitruong).Caption("Giá thị trường");
+
+                                        columns.AddFor(m => m.Mucthuong).Caption("Mức thưởng");
+
+                                        columns.AddFor(m => m.GiaTheoHd).Visible(false).Caption("Giá theo hợp đồng");
+
+                                        columns.AddFor(m => m.DvtTheoHd).Visible(false).Lookup(lookup => lookup.DataSource(new JS("DVTTheoHD")).ValueExpr("id").DisplayExpr("name"));
+
+                                    })
+                                    .Editing(e => e.Mode(GridEditMode.Popup)
+                                        .AllowAdding(true)
+                                        .AllowUpdating(true)
+                                        .AllowDeleting(true)
+                                        .UseIcons(true)
+                                        .Popup(p => p
+                                            .Title("Chỉnh sửa chi tiết hợp đồng mua bán")
+                                            .ShowTitle(true)
+                                            .Width(1400)
+                                            .Height(450)
+                                        )
+                                        .Form(f => f.Items(items => {
+                                            items.AddGroup()
+                                                .ColCount(2)
+                                                .ColSpan(2)
+                                                .Items(groupItems =>
+                                                {
+                                                    groupItems.AddSimpleFor(a => a.Mahang).ColSpan(2);
+
+                                                    groupItems.AddSimpleFor(a => a.DvtTheoHd).Editor(editor => editor.SelectBox().DataSource(new JS("DVTTheoHD")).ValueExpr("id").DisplayExpr("name"));
+
+                                                    groupItems.AddSimpleFor(a => a.Vat).Editor(editor => editor.TextBox().ReadOnly(true).ID("Vat_CtHDMB"));
+
+                                                    groupItems.AddSimpleFor(a => a.Soluong);
+
+                                                    groupItems.AddSimpleFor(a => a.Trongluong);
+
+                                                    groupItems.AddSimpleFor(a => a.GiaTheoHd);
+
+                                                    groupItems.AddSimpleFor(a => a.Giact);
+
+                                                    groupItems.AddSimpleFor(a => a.Giathitruong);
+
+                                                    groupItems.AddSimpleFor(a => a.Mucthuong);
+                                                });
+                                        }))
+                                    )
+                                    .Export(e => e.Enabled(true))
+                                    .FilterRow(filter => filter.Visible(true).ApplyFilter(GridApplyFilterMode.Auto))
+                                    .HeaderFilter(hearder => hearder.Visible(true))
+                                    .AllowColumnResizing(true)
+                                    .AllowColumnReordering(true)
+                                    .ColumnAutoWidth(true)
+                                    .ColumnChooser(c => c.Enabled(true))
+                                    .ColumnFixing(c => c.Enabled(true))
+                                    .ShowBorders(true)
+                                    .Grouping(group => group.AutoExpandAll(true))
+                                    .SearchPanel(searchPanel => searchPanel.Visible(true))
+                                    .GroupPanel(groupPanel => groupPanel.Visible(true))
+                                    .Paging(paging => paging.PageSize(10))
+                                    .Pager(paper =>
+                                    {
+                                        paper.ShowPageSizeSelector(true);
+                                        paper.AllowedPageSizes(new[] { 5, 10, 20 });
+                                        paper.ShowInfo(true);
+                                    })
+                                )
+                @using (Html.DevExtreme().NamedTemplate("DropDownBoxTemplate_Hanghoa"))
+                {
+                    @(Html.DevExtreme().DropDownBox()
+                                            .DataSource(d => d.Mvc().Controller("lookup")
+                                                    .LoadAction("LoadMaHangForCtHDMB")
+                                                    .Key("mahang")
+                                                    .LoadParams(new { id = new JS("ReturnMaKhach") }))
+                                                    .DisplayExpr("tenhang")
+                                                    .ValueExpr("mahang")
+                                                    .Value(new JS("value"))
+
+                                            .DisplayExpr("tenhang")
+                                            .ValueExpr("mahang")
+                                            .Option("setValue", new JS("setValue"))
+                                            .ContentTemplate(new TemplateName("ContentTemplate_MaHang"))
+                                        )
+
+                }
+                @using (Html.DevExtreme().NamedTemplate("ContentTemplate_MaHang"))
+                {
+                    @(Html.DevExtreme().DataGrid()
+                        .DataSource(new JS(@"component.getDataSource()"))
+                        .RemoteOperations(true)
+                        .Height(250)
+                        .Columns(columns => {
+                                    columns.Add().DataField("mahang").Caption("Mã hàng");
+                                    columns.Add().DataField("tenhang").Caption("Tên hàng");
+                                    columns.Add().DataField("dvt").Caption("ĐVT");
+                                    columns.Add().DataField("vat").Caption("Vat");
+                                    columns.Add().DataField("IsCheck").Caption("IsCheck");
+                                    columns.Add().DataField("TLGD").Caption("TLGD");
+                                    })
+                        .Scrolling(s => s.Mode(GridScrollingMode.Virtual))
+                        .HoverStateEnabled(true)
+                        .Selection(s => s.Mode(SelectionMode.Single))
+                        .SelectedRowKeys(new JS("[component.option('value')]"))
+                        .FocusedRowEnabled(true)
+                        .FocusedRowKey(new JS("component.option('value')"))
+                        .OnSelectionChanged("function(selectionChangedArgs) { onSelectionChanged_ContentTemplate_MaHang(selectionChangedArgs, component) }")
+                        .FilterRow(filter => filter.Visible(true).ApplyFilter(GridApplyFilterMode.Auto))
+                    )
+                }
+
+            </div>
+            <div class="col-md-12 col-sm-12" id="leftdiv" style="text-align:center">
+                <button type="button" class="btn btn-secondary" id="Button_New" style="font-size:small" onclick="Button_New()">New</button>
+                <button type="button" class="btn btn-secondary" id="Button_Edit" style="font-size:small" onclick="Button_Edit()">Edit</button>
+                <button type="button" class="btn btn-secondary" id="Button_Cancel" style="font-size:small" onclick="Button_Cancel()">Cancel</button>
+                <button type="button" class="btn btn-secondary" style="font-size:small" onclick="ExportWord()">Export word</button>
+                <button type="button" class="btn btn-secondary" style="font-size:small" onclick="History_HDMB()">Delivery Detail</button>
+                <button type="button" class="btn btn-secondary" style="font-size:small" onclick="AddAnnex()">Add Annex</button>
+                <button type="button" class="btn btn-secondary" style="font-size:small" onclick="AddPlans()">Add plan</button>
+            </div>
+        </div>
+    </div>
+    <br />
+</div>
+
+
+@*----------------------------------------------------Bootrap popup choose khách hàng-------------------------------------------------------------------------------------------------------------------------------*@
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="selected_KH">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            @(Html.DevExtreme().DataGrid()
+                    .DataSource(d => d.Mvc().Controller("Lookup").LoadAction("LoadKHForHopDong").Key("MaKhach"))
+                    .Columns(columns => {
+                        columns.Add().DataField("MaKhach").Caption("Mã khách");
+                        columns.Add().DataField("TenKhach").Caption("Tên khách");
+                        columns.Add().DataField("checkitem").CellTemplate(@<text>@(Html.DevExtreme().CheckBox()
+                                                                                .Value(new JS("data.checkitem"))
+                                                                            )</text>).Caption("Check Item");
+                        columns.Add().DataField("ValueNorm").Caption("Value norm");
+                        columns.Add().DataField("Vanchuyen").Caption("Vận chuyển");
+                        columns.Add().DataField("MaHd").Caption("Mã HD");
+                    })
+                    .OnSelectionChanged("Selected_Change_KH")
+                    .HoverStateEnabled(true)
+                    .Paging(p => p.PageSize(10))
+                    .FilterRow(f => f.Visible(true))
+                    .Selection(s => s.Mode(SelectionMode.Single))
+                )
+        </div>
+    </div>
+</div>
+@*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*@
+@*----------------------------------------------------Bootrap popup choose Int ký-------------------------------------------------------------------------------------------------------------------------------*@
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="selected_IntKy">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            @(Html.DevExtreme().DataGrid()
+                                                        .DataSource(d => d.Mvc().Controller("Lookup").LoadAction("LoadIntKyForHopDong").Key("Makhach"))
+                                                        .Columns(columns => {
+                                                            columns.Add().DataField("Makhach").Caption("Mã người kí");
+                                                            columns.Add().DataField("Nguoiky").Caption("Tên người kí");
+                                                        })
+                                                        .OnSelectionChanged("Selected_Change_IntKy")
+                                                        .HoverStateEnabled(true)
+                                                        .Paging(p => p.PageSize(10))
+                                                        .FilterRow(f => f.Visible(true))
+                                                        .Selection(s => s.Mode(SelectionMode.Single))
+                                                    )
+        </div>
+    </div>
+</div>
+@*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*@
+@*----------------------------------------------------Bootrap popup choose client ký-------------------------------------------------------------------------------------------------------------------------------*@
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="selected_ClientKy">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            @(Html.DevExtreme().DataGrid()
+                            .ID("DataGrid_ClientKy")
+                                                        .DataSource(d => d.Mvc().Controller("Lookup").LoadAction("LoadClientKyForHopDong").Key("Makhach").LoadParams(new { id = new JS("ReturnMaKhach")}))
+                                                        .Columns(columns => {
+                                                            columns.Add().DataField("Makhach").Caption("Mã người kí");
+                                                            columns.Add().DataField("Nguoiky").Caption("Tên người kí");
+                                                        })
+                                                        .OnSelectionChanged("Selected_Change_ClientKy")
+                                                        .HoverStateEnabled(true)
+                                                        .Paging(p => p.PageSize(10))
+                                                        .FilterRow(f => f.Visible(true))
+                                                        .Selection(s => s.Mode(SelectionMode.Single))
+                                                    )
+        </div>
+    </div>
+</div>
+@*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*@
+@*----------------------------------------------------Bootrap popup choose THANH TOÁN-------------------------------------------------------------------------------------------------------------------------------*@
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="selected_TT">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            @(Html.DevExtreme().DataGrid()
+                            .ID("DataGrid_TT")
+                                    .DataSource(d => d.Mvc().Controller("Lookup").LoadAction("LoadThanhToanForHopDong").Key("Matt").LoadParams(new { id = new JS("Param_DatagridTT")}))
+                                    .Columns(columns => {
+                                        columns.Add().DataField("Matt").Caption("Mã thanh toán");
+                                        columns.Add().DataField("TenTt").Caption("Tên thanh toán");
+                                        columns.Add().DataField("Mucung").Caption("Mức ứng");
+                                        columns.Add().DataField("ReportName").Caption("Report Name");
+                                        columns.Add().DataField("Id").Caption("Id");
+                                    })
+                                    .OnSelectionChanged("Selected_Change_TT")
+                                    .HoverStateEnabled(true)
+                                    .Paging(p => p.PageSize(10))
+                                    .FilterRow(f => f.Visible(true))
+                                    .Selection(s => s.Mode(SelectionMode.Single))
+                                )
+        </div>
+    </div>
+</div>
+@*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*@
+@*----------------------------------------------------Bootrap popup save phụ kiện hợp đồng-------------------------------------------------------------------------------------------------------------------------------*@
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="Annex_HDMB">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Phụ kiện hợp đồng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="Form_Annex_HDMB" method="post">
+                <div class="col-md-12 col-sm-12" id="leftdiv">
+                    @(Html.DevExtreme().DataGrid<HdmbAnnex>().ID("Annex_HDMB_dataGrid")
+                                    .DataSource(ds => ds.Mvc()
+                                        .Controller("Lookup")
+                                        .LoadAction("LoadAnnex_HDMB")
+                                        .Key("Id")
+                                        .LoadParams(new { id = new JS("GetSystemRef") })
+                                    )
+                                    .RemoteOperations(true)
+                                    .Columns(columns => {
+
+                                        columns.AddFor(m => m.Id).Visible(false);
+
+                                        columns.AddFor(m => m.Number).Caption("Number");
+
+                                        columns.AddFor(m => m.NoiDung).Caption("Nội dung");
+
+                                        columns.AddFor(m => m.NgayTao).Caption("Ngày tạo");
+
+                                        columns.AddFor(m => m.Path).Caption("Path");
+
+                                    })
+                                    .OnSelectionChanged("Selected_Annex")
+                                    .ColumnAutoWidth(true)
+                                    .Selection(s => s.Mode(SelectionMode.Single))
+                                    .HoverStateEnabled(true)
+                                    .HeaderFilter(hearder => hearder.Visible(true))
+                                    .AllowColumnResizing(true)
+                                    .AllowColumnReordering(true)
+                                    .ShowBorders(true)
+                                    .Grouping(group => group.AutoExpandAll(true))
+                                    .Paging(paging => paging.PageSize(24))
+                                )
+                    <div class="form-group row" style="margin-top:10px">
+                        <label class="col-form-label col-md-2 col-sm-2">Số phụ kiện</label>
+                        <input type="text" class="form-control col-md-10 col-sm-10 text-box-hdmb" id="SoPhuKien_Annex_HDMB" name="SoPhuKien_Annex_HDMB">
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-12 col-sm-12">Nội dung chỉnh sửa</label>
+                    </div>
+                    <div class="form-group row" style="border-width:1px;border:solid;height:180px">
+                        <div class="CheckBox_Annex" id="CheckBox_Annex">
+
+                        </div>
+                    </div>
+                    <input type="text" id="IdAnnex" hidden>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="ExportWord_Annex()">Export word</button>
+                    <button type="button" class="btn btn-secondary" onclick="Submit_form_Annex_HDMB()">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*@
+@*----------------------------------------------------Bootrap popup lịch sử hợp đồng-------------------------------------------------------------------------------------------------------------------------------*@
+<div class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="History_HDMB">
+    <div class="modal-dialog" style="max-width:90%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Phụ kiện hợp đồng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("_PartialView_History_HDMB.cshtml")
+            </div>
+            
+        </div>
+    </div>
+</div>
+@*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*@
+
+<script type="text/javascript">
+    function onSelectionChanged_ContentTemplate_MaHang(selectionChangedArgs, component) {
+        var setValue = component.option('setValue');
+        var selectedRowKey = selectionChangedArgs.selectedRowKeys[0];
+        var data = selectionChangedArgs.selectedRowsData[0];
+        if (data) {
+            $("#Vat_CtHDMB").dxTextBox("instance").option("value", data.vat);
+        }
+        component.option('value', selectedRowKey);
+        setValue(selectedRowKey);
+        if (selectionChangedArgs.selectedRowKeys.length > 0) {
+            component.close();
+        }
+    }
+    document.onkeyup = function (event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if ($('#selected_KH').is(':visible')) {
+                $("#selected_KH").modal('hide');
+            } else if ($('#selected_ClientKy').is(':visible')) {
+                $("#selected_ClientKy").modal('hide');
+            } else if ($('#selected_IntKy').is(':visible')) {
+                $("#selected_IntKy").modal('hide');
+            } else if ($('#selected_TT').is(':visible')) {
+                $("#selected_TT").modal('hide');
+            }
+        }
+    }
+    function ReturnMaKhach() {
+        return document.getElementById("Makhach").value;
+    }
+    function Param_DatagridTT() {
+        var MuaBan = $('input[name="MuaBan"]:checked').val();
+        var LoaiHD = "";
+        if (MuaBan == "MUA") {
+            LoaiHD = "MUA";
+        } else {
+            LoaiHD = "BAN"
+        }
+        return LoaiHD;
+    }
+    function Changed_TienTe(data) {
+        if (data.value.replace(/\s/g, '') == "VND") {
+            document.getElementById("Money").value = 'Việt Nam Đồng';
+        } else if (data.value.replace(/\s/g, '') == "USD") {
+            document.getElementById("Money").value = 'Đô la mỹ';
+        }
+    }
+    var LOAIHD = [{
+        "id": "MUA", "name": "Mua"
+    }, {
+        "id": "BAN", "name": "Bán"
+    }, {
+        "id": "ALL", "name": "All"
+    }
+    ];
+    var DVTTheoHD = [{
+        "id": "KGS", "name": "KGS"
+    }, {
+        "id": "MTS", "name": "MTS"
+    }, {
+        "id": "LBS", "name": "LBS"
+    }
+    ];
+    function GetSystemRef() {
+        return document.getElementById("Systemref").value;
+    }
+    function Hdmb_Selection(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            $.post('/Lookup/GetList_Annex_HDMB', { 'Systemref': data.Systemref }, function (data) {
+                var list = data;
+                document.getElementById('CheckBox_Annex').innerHTML = '';
+                for (var i = 0; i < data.length; i++) {
+                    var item = data[i];
+                    document.getElementById('CheckBox_Annex').innerHTML = document.getElementById('CheckBox_Annex').innerHTML + "<input type='checkbox' name='CheckBox_AnnexHDMB' value=\"" + data[i] + "\">" +
+                        "<label style='margin-left:10px'>" + data[i] + "</label><br>";
+                }
+            })
+            $.post('/Hopdong/Fill_Form_HDMB', { 'Systemref': data.Systemref }, function (array) {
+                document.getElementById("Systemref").value = array.Systemref;
+                document.getElementById("Ref").value = array.Ref;
+                document.getElementById("Makhach").value = array.Makhach;
+                document.getElementById("Sohd").value = array.Sohd;
+                $("#Tiente").dxSelectBox("instance").option("value", array.Tiente);
+                document.getElementById("IntKy").value = array.IntKy;
+                document.getElementById("ClientKy").value = array.ClientKy;
+                document.getElementById("Thanhtoan").value = array.Thanhtoan;
+                document.getElementById("Tenfull").value = array.Tenfull;
+                document.getElementById("DiaDiemGiaoHang").value = array.DiaDiemGiaoHang;
+                document.getElementById("Ghichu").value = array.Ghichu;
+                $("#Ngayky").dxDateBox({ value: array.Ngayky });
+                $("#Ngaygiao").dxDateBox({ value: array.Ngaygiao });
+                $("#Ngayhl").dxDateBox({ value: array.Ngayhl });
+                document.getElementById("TienUngHd").value = array.TienUngHd;
+                document.getElementById("TienUngTt").value = array.TienUngTt;
+                document.getElementById("Nguoilam").value = array.Nguoilam;
+                document.getElementById("Macn").value = array.Macn;
+                document.getElementById("VanChuyen").value = array.VanChuyen;
+                document.getElementById("Mucung").value = array.Mucung;
+                document.getElementById("Money").value = array.Money;
+                document.getElementById("TenTT").value = array.TenTT;
+                document.getElementById("Name_IntKy").value = array.Name_IntKy;
+                document.getElementById("Name_ClientKy").value = array.Name_ClientKy;
+                if (array.IsFix == false) {
+                    document.getElementById("OutRight").checked = true;
+                } else {
+                    document.getElementById("TruLui").checked = true;
+                }
+                if (array.TypeKd == 0) {
+                    document.getElementById("TrucTiep").checked = true;
+                } else {
+                    document.getElementById("UyThac").checked = true;
+                }
+                if (array.Pakd == true) {
+                    document.getElementById("Pakd").checked = true;
+                }
+                else {
+                    document.getElementById("Pakd").checked = false;
+                }
+                if (array.IsNoKhoDoi == true) {
+                    document.getElementById("IsNoKhoDoi").checked = true;
+                }
+                else {
+                    document.getElementById("IsNoKhoDoi").checked = false;
+                }
+                switch (array.MuaBan) {
+                    case "MUA":
+                        document.getElementById("MUA").checked = true;
+                        break;
+                    case "BAN":
+                        document.getElementById("BAN").checked = true;
+                        break;
+                }
+                document.getElementById("MuaBan_HistoryHDMB").value = array.MuaBan;
+            })
+            document.getElementById("Systemref").value = data.Systemref;
+            $("#CtHDMB_dataGrid").dxDataGrid("refresh");
+            $("#Annex_HDMB_dataGrid").dxDataGrid("refresh");
+            Disable_form();
+            document.getElementById("Button_New").innerHTML = 'New';
+        }
+    }
+    function Enable_form() {
+
+        document.getElementById("Ref").disabled = false;
+        document.getElementById("Makhach").disabled = false;
+        document.getElementById("Sohd").disabled = false;
+        $("#Tiente").dxSelectBox("instance").option("disabled", false);
+        document.getElementById("IntKy").disabled = false;
+        document.getElementById("ClientKy").disabled = false;
+        document.getElementById("Thanhtoan").disabled = false;
+        document.getElementById("Tenfull").disabled = false;
+        document.getElementById("DiaDiemGiaoHang").disabled = false;
+        document.getElementById("Ghichu").disabled = false;
+        $("#Ngayky").dxDateBox("instance").option("disabled", false);
+        $("#Ngaygiao").dxDateBox("instance").option("disabled", false);
+        $("#Ngayhl").dxDateBox("instance").option("disabled", false);
+        document.getElementById("TienUngHd").disabled = false;
+        document.getElementById("TienUngTt").disabled = false;
+        document.getElementById("VanChuyen").disabled = false;
+        document.getElementById("Mucung").disabled = false;
+        document.getElementById("Money").disabled = false;
+        document.getElementById("TenTT").disabled = false;
+        document.getElementById("Name_IntKy").disabled = false;
+        document.getElementById("Name_ClientKy").disabled = false;
+        document.getElementById("MUA").disabled = false;
+        document.getElementById("BAN").disabled = false;
+        document.getElementById("OutRight").disabled = false;
+        document.getElementById("TruLui").disabled = false;
+        document.getElementById("TrucTiep").disabled = false;
+        document.getElementById("UyThac").disabled = false;
+        document.getElementById("Pakd").disabled = false;
+        document.getElementById("IsNoKhoDoi").disabled = false;
+        document.getElementById("TrucTiep").checked = true;
+        document.getElementById("OutRight").checked = true;
+        document.getElementById("MUA").checked = true;
+    }
+    function Disable_form() {
+        document.getElementById("Systemref").disabled = true;
+        document.getElementById("Ref").disabled = true;
+        document.getElementById("Makhach").disabled = true;
+        document.getElementById("Sohd").disabled = true;
+        $("#Tiente").dxSelectBox("instance").option("disabled", true);
+        document.getElementById("IntKy").disabled = true;
+        document.getElementById("ClientKy").disabled = true;
+        document.getElementById("Thanhtoan").disabled = true;
+        document.getElementById("Tenfull").disabled = true;
+        document.getElementById("DiaDiemGiaoHang").disabled = true;
+        document.getElementById("Ghichu").disabled = true;
+        $("#Ngayky").dxDateBox("instance").option("disabled", true);
+        $("#Ngaygiao").dxDateBox("instance").option("disabled", true);
+        $("#Ngayhl").dxDateBox("instance").option("disabled", true);
+        document.getElementById("TienUngHd").disabled = true;
+        document.getElementById("TienUngTt").disabled = true;
+        document.getElementById("Nguoilam").disabled = true;
+        document.getElementById("Macn").disabled = true;
+        document.getElementById("VanChuyen").disabled = true;
+        document.getElementById("Mucung").disabled = true;
+        document.getElementById("Money").disabled = true;
+        document.getElementById("TenTT").disabled = true;
+        document.getElementById("Name_IntKy").disabled = true;
+        document.getElementById("Name_ClientKy").disabled = true;
+        document.getElementById("MUA").disabled = true;
+        document.getElementById("BAN").disabled = true;
+        document.getElementById("OutRight").disabled = true;
+        document.getElementById("TruLui").disabled = true;
+        document.getElementById("TrucTiep").disabled = true;
+        document.getElementById("UyThac").disabled = true;
+        document.getElementById("Pakd").disabled = true;
+        document.getElementById("IsNoKhoDoi").disabled = true;
+    }
+    function ClearText_Form() {
+        document.getElementById("Systemref").value = '';
+        document.getElementById("Ref").value = '';
+        document.getElementById("Makhach").value = '';
+        document.getElementById("Sohd").value = '';
+        document.getElementById("Tiente").value = '';
+        document.getElementById("IntKy").value = '';
+        document.getElementById("ClientKy").value = '';
+        document.getElementById("Thanhtoan").value = '';
+        document.getElementById("Tenfull").value = '';
+        document.getElementById("DiaDiemGiaoHang").value = '';
+        document.getElementById("Ghichu").value = '';
+        document.getElementById("Ngayky").value = '';
+        document.getElementById("Ngaygiao").value = '';
+        document.getElementById("Ngayhl").value = '';
+        document.getElementById("TienUngHd").value = '';
+        document.getElementById("TienUngTt").value = '';
+        document.getElementById("Nguoilam").value = '';
+        document.getElementById("Macn").value = '';
+        document.getElementById("VanChuyen").value = '';
+        document.getElementById("Mucung").value = '';
+        document.getElementById("Money").value = '';
+        document.getElementById("TenTT").value = '';
+        document.getElementById("Name_IntKy").value = '';
+        document.getElementById("Name_ClientKy").value = '';
+    }
+    function Button_New() {
+        var text = document.getElementById("Button_New").innerText;
+        if (text == 'New') {
+            document.getElementById("Button_New").innerHTML = 'Save';
+            Enable_form();
+            ClearText_Form();
+        } else if (text == 'Save') {
+            document.getElementById("Form_Hdmb").action = "/Hopdong/AddHopDong";
+            document.getElementById("Form_Hdmb").submit();
+        }
+    }
+    function Button_Edit() {
+        var text = document.getElementById("Button_Edit").innerHTML;
+        if (text == "Edit") {
+            document.getElementById("Button_Edit").innerHTML = 'Save';
+            Enable_form();
+
+        } else if (text == 'Save') {
+            var id = document.getElementById("Systemref").value;
+            document.getElementById("Form_Hdmb").action = "/Hopdong/AddHopDong/" + id;
+            document.getElementById("Form_Hdmb").submit();
+        }
+    }
+    function Button_Cancel() {
+        location.href = '/Hopdong/CancelContract/' + document.getElementById("Systemref").value;
+    }
+    function History_HDMB() {
+        if (GetSystemRef() != 0) {
+            var MuaBan = document.getElementById("MuaBan_HistoryHDMB").value;
+            if (MuaBan == "MUA" || MuaBan == "KTRA") {
+                LoadDiv_Mua();
+            } else if (MuaBan == "BAN") {
+                LoadDiv_Ban();
+            } else if (MuaBan == "MUON") {
+                LoadDiv_Muon();
+            } else if (MuaBan == "CMUON") {
+                LoadDiv_CMuon();
+            }
+            LoadDiv_TheoHopDong();
+            $.post('/Lookup/GetHistory_HDMB', { 'Systemref': GetSystemRef() }, function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    document.getElementById("sohd_History_HDMB").value = data[0].sohd;
+                    document.getElementById("Ref_History_HDMB").value = data[0].Ref;
+                    if (data[0].trangthai == 0) {
+                        document.getElementById("trangthai_History_HDMB").checked = true;
+                    }
+                    else {
+                        document.getElementById("trangthai_History_HDMB").checked = false;
+                    }
+                    document.getElementById("ngayky_History_HDMB").value = data[0].ngayky;
+                    document.getElementById("ngaygiao_History_HDMB").value = data[0].ngaygiao;
+                    document.getElementById("ngaytl_History_HDMB").value = data[0].ngaytl;
+                    document.getElementById("DVTTheoHD_History_HDMB").value = data[0].DVTTheoHD;
+                    document.getElementById("hanghoa_History_HDMB").value = data[0].hanghoa;
+                    document.getElementById("trongluong_History_HDMB").value = data[0].trongluong;
+                    document.getElementById("TLGiao_History_HDMB").value = data[0].TLGiao;
+                    document.getElementById("Price_History_HDMB").value = data[0].Price;
+                    document.getElementById("ghichu_History_HDMB").value = data[0].ghichu;
+                    document.getElementById("MaHang_HistoryHDMB").value = data[0].mahang; 
+                }
+                $("#GiaoNhan_HistoryHDMB_Datagrid").dxDataGrid("refresh");
+                $("#GiaoNhan_HistoryHDMB_HDBan_Datagrid").dxDataGrid("refresh");
+                $("#HangHoa_HistoryHDMB_Datagrid").dxDataGrid("refresh");
+                $("#ChungTu_HistoryHDMB_Datagrid").dxDataGrid("refresh");
+
+            })
+            $("#History_HDMB").modal('show');
+        } else {
+            $.notify("Vui lòng chọn hợp đồng muốn xem", "error");
+        }
+    }
+    function AddAnnex() {
+        $("#Annex_HDMB").modal('show');
+    }
+    $("#Makhach").keyup(function (event) {
+        if (event.keyCode === 13) {
+            $("#selected_KH").modal('show');
+        }
+    });
+    $("#ClientKy").keyup(function (event) {
+        if (event.keyCode === 13) {
+            $("#DataGrid_ClientKy").dxDataGrid("refresh");
+            $("#selected_ClientKy").modal('show');
+        }
+    });
+    $("#IntKy").keyup(function (event) {
+        if (event.keyCode === 13) {
+            $("#selected_IntKy").modal('show');
+        }
+    });
+    $("#Thanhtoan").keyup(function (event) {
+        if (event.keyCode === 13) {
+            $("#DataGrid_TT").dxDataGrid("refresh");
+            $("#selected_TT").modal('show');
+        }
+    });
+    function Selected_Change_KH(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        var strDate = new Date(); // By default Date empty constructor give you Date.now
+        var shortYear = strDate.getFullYear();
+        // Add this line
+        var twoDigitYear = shortYear.toString().substr(-2);
+        if (data) {
+            if (data.checkitem == true && data.ValueNorm == 0 && $('input[name="MuaBan"]:checked').val() == "MUA") {
+                $.notify("Chưa đăng ký trọng lượng giao dịch cho khách hàng này", "error");
+            } else if ($('input[name="MuaBan"]:checked').val() == "MUA" && document.getElementById("Systemref").value == "") {
+                document.getElementById("Makhach").value = data.MaKhach;
+                document.getElementById("Tenfull").value = data.TenKhach;
+                document.getElementById("VanChuyen").value = data.Vanchuyen;
+                document.getElementById("Sohd").value = document.getElementById("Ref").value + "/" + "INX" + "-" + document.getElementById("Makhach").value + "/" + twoDigitYear;
+            }
+            else {
+                document.getElementById("Makhach").value = data.MaKhach;
+                document.getElementById("Tenfull").value = data.TenKhach;
+                document.getElementById("VanChuyen").value = data.Vanchuyen;
+            }
+        }
+    }
+    function Selected_Change_ClientKy(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            document.getElementById("ClientKy").value = data.Makhach;
+            document.getElementById("Name_ClientKy").value = data.Nguoiky;
+        }
+    }
+    function Selected_Change_IntKy(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            document.getElementById("IntKy").value = data.Makhach;
+            document.getElementById("Name_IntKy").value = data.Nguoiky;
+        }
+    }
+    function Selected_Change_TT(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            document.getElementById("Thanhtoan").value = data.Matt;
+            document.getElementById("TenTT").value = data.TenTt;
+            document.getElementById("Mucung").value = data.Mucung;
+        }
+    }
+    function Selected_Annex(selectedItems) {
+        var data = selectedItems.selectedRowsData[0];
+        if (data) {
+            document.getElementById("IdAnnex").value = data.Id;
+        }
+    }
+    function MaHang_valueChanged(e) {
+        var $dataGrid = $("#ChooseMaHang_dataGrid");
+
+        if ($dataGrid.length) {
+            var dataGrid = $dataGrid.dxDataGrid("instance");
+            dataGrid.selectRows(e.value, false);
+        }
+    }
+    function Submit_form_Annex_HDMB() {
+        if (document.getElementById("SoPhuKien_Annex_HDMB").value == "") {
+            $.notify("Vui lòng nhập số phụ kiện hợp đồng", "error");
+        } else {
+            document.getElementById("Form_Annex_HDMB").action = "/Hopdong/Save_Annex_HDMB/" + document.getElementById("Systemref").value;
+            document.getElementById("Form_Annex_HDMB").submit();
+        }
+    }
+    function ExportWord_Annex() {
+        if (document.getElementById("IdAnnex").value == "") {
+            $.notify("Vui lòng chọn phụ kiện muốn export", "error");
+        } else {
+            location.href = '/Hopdong/ExportWord_Annex_HDMB/' + document.getElementById("IdAnnex").value;
+        }
+
+    }
+</script>
+
+
+
+
+
+
