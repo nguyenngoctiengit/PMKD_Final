@@ -1,9 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Content Include="wwwroot\Admin\vendors\parsleyjs\bower_components\bootstrap\bower.json" />
     <Content Include="wwwroot\Admin\vendors\parsleyjs\bower_components\bootstrap\dist\css\bootstrap-theme.css" />
@@ -21,7 +19,6 @@
     <Content Include="wwwroot\Admin\vendors\parsleyjs\bower_components\uwidget\bower.json" />
     <Content Include="wwwroot\Admin\vendors\parsleyjs\bower_components\uwidget\uwidget.css" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="wwwroot\Admin\vendors\bootstrap\.github\CODEOWNERS" />
     <None Include="wwwroot\Admin\vendors\bootstrap\.github\CONTRIBUTING.md" />
@@ -192,9 +189,8 @@
     <None Include="wwwroot\Admin\vendors\parsleyjs\bower_components\uwidget\uwidget.js" />
     <None Include="wwwroot\Admin\vendors\parsleyjs\bower_components\uwidget\uwidget.less" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="DevExtreme.AspNet.Core" Version="22.1.6" />
+    <PackageReference Include="DevExtreme.AspNet.Core" Version="22.2.4" />
     <PackageReference Include="DevExtreme.AspNet.Data" Version="2.9.0" />
     <PackageReference Include="EntityFrameworkCore.UseRowNumberForPaging" Version="0.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.0" />
@@ -208,5 +204,4 @@
     <PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="19.4.0.56" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
-
 </Project>

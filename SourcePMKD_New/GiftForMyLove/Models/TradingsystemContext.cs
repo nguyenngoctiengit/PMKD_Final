@@ -344,8 +344,8 @@ namespace GiftForMyLove.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                var ConnectionStrings = "Server=14.161.30.211,2313;Database=tradingsystem;User Id=kd;Password=Intimex;";
-                optionsBuilder.UseSqlServer("Server=14.161.30.211,2313;Database=tradingsystem;User Id=kd;Password=Intimex;");
+                var ConnectionStrings = "Server=14.161.30.211,2309;Database=tradingsystem;User Id=kd1;Password=Intimex;";
+                optionsBuilder.UseSqlServer("Server=14.161.30.211,2309;Database=tradingsystem;User Id=kd1;Password=Intimex;");
                 optionsBuilder.UseSqlServer(ConnectionStrings, builder => builder.UseRowNumberForPaging());
             }
         }
